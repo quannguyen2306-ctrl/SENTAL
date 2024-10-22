@@ -196,7 +196,8 @@ if state.ai_toggle:
         Settings.llm = OpenAI(model = "gpt-4o-mini", temperature=0)
 
         # Ingestion data
-        documents = SimpleDirectoryReader(input_dir="data").load_data()
+        data_path = os.path.join(os.path.dirname(__file__), 'data')
+        documents = SimpleDirectoryReader(input_dir=data_path).load_data()
         # store ingrestion
         PERSIST_DIR = "index_cache"
 
