@@ -18,6 +18,7 @@ import torch
 import streamlit as st
 from llama_index.core import SimpleDirectoryReader
 state = st.session_state
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 if "messages" not in st.session_state:
     state.messages = []
@@ -58,6 +59,37 @@ def predict_sentiment(model_name, comment: str, k: float) -> tuple:
         tendency = (k * neg + (1 - k) * pos + (1 - abs(2 * k - 1)) * neu) / (k + (1 - k) + (1 - abs(2 * k - 1)))
         
         return (tendency, neg, pos, neu)
+
+
+def init_chatbot(): 
+    print(not state.init_chatbot)
+    print("Initializing Chat-bot........ ")
+    ANSWER_TEMPLATE = ( 
+        "According to the book: The YouTube Formula, and the comment from the video {comment}, and the information of the video, title: {title}, author: {author}. If these information is empty, then ask the user to input the youtube video url and analyze"
+        "What is the best solution for this problem:"
+        "{question_str}?"
+        "Answer like the author of the book, reference something one the book but not act as a query engine, also referent to the comment and the title"
+    )
+
+    Settings.llm = OpenAI(model = "gpt-4o-mini", temperature=0)
+
+    # Ingestion data
+    data_path = os.path.join(os.path.dirname(__file__), 'data')
+    documents = SimpleDirectoryReader(input_dir=data_path).load_data()
+    # store ingrestion
+    PERSIST_DIR = "index_cache"
+
+    if not os.path.exists(PERSIST_DIR):
+        # load the documents and create the index
+        state.index = VectorStoreIndex.from_documents(documents)
+        # store it for later
+        state.index.storage_context.persist(persist_dir=PERSIST_DIR)
+    else:
+        state.storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
+        state.index = load_index_from_storage(state.storage_context)
+
+    state.qa_template = PromptTemplate(ANSWER_TEMPLATE)
+    state.init_chatbot = True
 
 # Create a form container
 form = st.container()
@@ -138,7 +170,7 @@ with form:
                             counter_cmt += 1
                         else:
                             break
-                            
+                    init_chatbot()
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
             else:
@@ -183,37 +215,12 @@ with col1:
 
             st.plotly_chart(fig)
 
+
+
 # Chatbot section
 if state.ai_toggle:
-    print(not state.init_chatbot)
     if not state.init_chatbot:
-        print("Initializing Chat-bot........ ")
-        ANSWER_TEMPLATE = ( 
-            "According to the book: The YouTube Formula, and the comment from the video {comment}, and the information of the video, title: {title}, author: {author}"
-            "What is the best solution for this problem:"
-            "{question_str}?"
-            "Answer like the author of the book, reference something one the book but not act as a query engine."
-        )
-
-        Settings.llm = OpenAI(model = "gpt-4o-mini", temperature=0)
-
-        # Ingestion data
-        data_path = os.path.join(os.path.dirname(__file__), 'data')
-        documents = SimpleDirectoryReader(input_dir=data_path).load_data()
-        # store ingrestion
-        PERSIST_DIR = "index_cache"
-
-        if not os.path.exists(PERSIST_DIR):
-            # load the documents and create the index
-            state.index = VectorStoreIndex.from_documents(documents)
-            # store it for later
-            state.index.storage_context.persist(persist_dir=PERSIST_DIR)
-        else:
-            state.storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-            state.index = load_index_from_storage(state.storage_context)
-
-        state.qa_template = PromptTemplate(ANSWER_TEMPLATE)
-        state.init_chatbot = True
+        init_chatbot()
     with col2:
         if state.init_chatbot:
             st.subheader("Ask the AI about YouTube strategies, answer will be derived from book: The Youtube Formula by DERRAL EVES")
