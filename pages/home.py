@@ -196,8 +196,7 @@ if state.ai_toggle:
         Settings.llm = OpenAI(model = "gpt-4o-mini", temperature=0)
 
         # Ingestion data
-        STORAGE_PATH = "docx"
-        documents = SimpleDirectoryReader(input_dir="src/data").load_data()
+        documents = SimpleDirectoryReader(input_dir="data").load_data()
         # store ingrestion
         PERSIST_DIR = "index_cache"
 
