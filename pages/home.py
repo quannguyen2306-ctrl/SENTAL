@@ -17,13 +17,13 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
 import streamlit as st
 from llama_index.core import SimpleDirectoryReader
-
+state = st.session_state
 
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    state.messages = []
 
 if "init_chatbot" not in st.session_state: 
-    st.session_state.init_chatbot = False
+    state.init_chatbot = False
 # Initialize session state
 state = st.session_state
 if 'analyzed' not in state: 
@@ -72,7 +72,7 @@ with form:
         # Adding a callback to analyze the video
         if st.button("Analyze", key="video_url_submit"):
 
-            st.session_state.analyzed = False  # Reset for new analysis
+            state.analyzed = False  # Reset for new analysis
             print("Testing\n")
             print("Analyzing...")
             state = st.session_state
@@ -185,7 +185,9 @@ with col1:
 
 # Chatbot section
 if state.ai_toggle:
+    print(not state.init_chatbot)
     if not state.init_chatbot:
+        print("Initializing Chat-bot........ ")
         ANSWER_TEMPLATE = ( 
             "According to the book: The YouTube Formula, and the comment from the video {comment}, and the information of the video, title: {title}, author: {author}"
             "What is the best solution for this problem:"
@@ -203,57 +205,57 @@ if state.ai_toggle:
 
         if not os.path.exists(PERSIST_DIR):
             # load the documents and create the index
-            index = VectorStoreIndex.from_documents(documents)
+            state.index = VectorStoreIndex.from_documents(documents)
             # store it for later
-            index.storage_context.persist(persist_dir=PERSIST_DIR)
+            state.index.storage_context.persist(persist_dir=PERSIST_DIR)
         else:
-            storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-            index = load_index_from_storage(storage_context)
+            state.storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
+            state.index = load_index_from_storage(state.storage_context)
 
-        qa_template = PromptTemplate(ANSWER_TEMPLATE)
+        state.qa_template = PromptTemplate(ANSWER_TEMPLATE)
         state.init_chatbot = True
     with col2:
-        
-        st.subheader("Ask the AI about YouTube strategies, answer will be derived from: The Youtube Formula by DERRAL EVES")
-        # user_question = st.text_input("Ask a question about YouTube strategies:")
-        if "analyzed_comments" not in state: 
-            comment = []
-        else: 
-            comment = state.analyzed_comments
-        if "video_author" not in state: 
-            author = ""
-        else: 
-            author = state.video_author
-        if "video_title" not in state: 
-            title = ""
-        else: 
-            title = state.video_title
-        
-        # if user_question:
-        #     streaming_response = chat_engine.stream_chat(prompt)
-        #     response_placeholder = st.empty()  
-        #     bot_response = "Bot: "
-
-        #     for token in streaming_response.response_gen:
-        #         bot_response += token
-        #         response_placeholder.write(bot_response)
-        if prompt := st.chat_input("Ask a question about YouTube strategies"):
+        if state.init_chatbot:
+            st.subheader("Ask the AI about YouTube strategies, answer will be derived from book: The Youtube Formula by DERRAL EVES")
+            # user_question = st.text_input("Ask a question about YouTube strategies:")
+            if "analyzed_comments" not in state: 
+                comment = []
+            else: 
+                comment = state.analyzed_comments
+            if "video_author" not in state: 
+                author = ""
+            else: 
+                author = state.video_author
+            if "video_title" not in state: 
+                title = ""
+            else: 
+                title = state.video_title
             
-            prompt_t = qa_template.format(question_str = prompt, comment=comment, author=author, title=title)
-            # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            # Display user message in chat message container
-            with st.chat_message("user"):
-                st.markdown(prompt)
-            # Display assistant response in chat message container
-            with st.chat_message("assistant"):
-                def stream(): 
-                    chat_engine = index.as_chat_engine()
-                    streaming_response = chat_engine.stream_chat(prompt)
-                    for token in streaming_response.response_gen: 
-                        yield token
-                streaming = stream()
-                response = st.write_stream(streaming)
-            state.messages.append({"role": "assistant", "content": response})
+            # if user_question:
+            #     streaming_response = chat_engine.stream_chat(prompt)
+            #     response_placeholder = st.empty()  
+            #     bot_response = "Bot: "
+
+            #     for token in streaming_response.response_gen:
+            #         bot_response += token
+            #         response_placeholder.write(bot_response)
+            if prompt := st.chat_input("Ask a question about YouTube strategies"):
+                
+                prompt_t = state.qa_template.format(question_str = prompt, comment=comment, author=author, title=title)
+                # Add user message to chat history
+                st.session_state.messages.append({"role": "user", "content": prompt})
+                # Display user message in chat message container
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+                # Display assistant response in chat message container
+                with st.chat_message("assistant"):
+                    def stream(): 
+                        chat_engine = state.index.as_chat_engine()
+                        streaming_response = chat_engine.stream_chat(prompt)
+                        for token in streaming_response.response_gen: 
+                            yield token
+                    streaming = stream()
+                    response = st.write_stream(streaming)
+                state.messages.append({"role": "assistant", "content": response})
 
 
