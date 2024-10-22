@@ -12,7 +12,6 @@ def show_sidebar():
         'finiteautomata/bertweet-base-sentiment-analysis'), 
         key="model_name"
     )
-    st.sidebar.write("This degree (k) will determine the Tendency(T) of negativeness of a comment you want to query")
     # st.sidebar.latex(r'''
     #         \text{tendency} = \frac{k \cdot \text{neg} + (1 - k) \cdot \text{pos} + \left(1 - |2k - 1|\right) \cdot \text{neu}}{k + (1 - k) + \left(1 - |2k - 1|\right)}
     #         ''')
@@ -40,7 +39,7 @@ def show_sidebar():
         st.sidebar.write("Maximum number of comment analzying:", state.num_batch * state.num_cmt_per_batch, "comment(s)")
         st.sidebar.write("Estimated waiting time:", round(((state.num_batch * state.num_cmt_per_batch)/60), 3), "minute(s)")
     st.sidebar.header("Agent Options")
-    st.write("Use our AI Agent to help you discover insights from the video comment's sentiment and gives feedback. The Agent used RAG to to optimized OpenAI gpt-4o-mini LLM through the book: The Youtube Formula by Derral Eves.")
+    st.sidebar.write("Use our AI Agent to help you discover insights from the video comment's sentiment and gives feedback. The Agent used RAG to to optimized OpenAI gpt-4o-mini LLM through the book: The Youtube Formula by Derral Eves.")
     st.sidebar.toggle("Use AI agency", value=False, key='ai_toggle')
 
 
