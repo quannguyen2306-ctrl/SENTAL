@@ -1,7 +1,6 @@
 import streamlit as st 
 import pandas as pd 
 import numpy as np 
-import time
 from src.plot_table import plot_table
 from src.show_sidebar import show_sidebar
 import plotly.express as px

@@ -1,3 +1,7 @@
 plotly
 streamlit
 llama-index  
+numpy 
+pandas
+transformers
+torch
