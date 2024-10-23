@@ -39,7 +39,7 @@ def show_sidebar():
         st.sidebar.write("Maximum number of comment analzying:", state.num_batch * state.num_cmt_per_batch, "comment(s)")
         st.sidebar.write("Estimated waiting time:", round(((state.num_batch * state.num_cmt_per_batch)/60), 3), "minute(s)")
     st.sidebar.header("Agent Options")
-    st.sidebar.write("Use our AI Agent to help you discover insights from the video comment's sentiment and gives feedback. The Agent used RAG to to optimized OpenAI gpt-4o-mini LLM through the book: The Youtube Formula by Derral Eves.")
+    st.sidebar.write("Use our AI Agent to help you discover insights from the video comment's sentiment and gives feedback. The Agent used RAG to optimized OpenAI gpt-4o-mini LLM through the book: The Youtube Formula by Derral Eves.")
     st.sidebar.toggle("Use AI agency", value=False, key='ai_toggle')
 
 

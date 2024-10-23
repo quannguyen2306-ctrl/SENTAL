@@ -41,9 +41,9 @@ if "analyzed_comments" not in state:
     state.analyzed_comments = []
 
 # Render Homepage 
-st.title("SENTAL: YouTube's Videos Sentiment Analysis")
+st.title("SENTAL: YouTube's Videos Comment Sentiment Analysis")
 st.subheader("An interactive sentiment analyzing dashboard for content creators")
-st.markdown("App by [Hoang Quan](https://github.com/quannguyen2306-ctrl) | This webpage lets you analyze your audience comments on your YouTube channel using different pre-trained models from Hugging Face (huggingface.com).")
+st.markdown("App by [Hoang Quan](https://github.com/quannguyen2306-ctrl) | This webpage lets you analyze your audience comments on your YouTube channel using different pre-trained models from Hugging Face (huggingface.com), and a refined LLM from OpenAI models.")
 
 
 def predict_sentiment(model_name, comment: str, k: float) -> tuple:
