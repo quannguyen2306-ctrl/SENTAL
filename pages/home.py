@@ -9,6 +9,7 @@ from llama_index.llms.openai import OpenAI
 from llama_parse import LlamaParse
 from llama_index.core import VectorStoreIndex
 from llama_index.core import StorageContext, load_index_from_storage
+from llama_index.core import Document
 import os 
 from llama_index.core import PromptTemplate
 from src.comment import CommentInteractor
@@ -76,9 +77,10 @@ def init_chatbot():
     # Ingestion data
     data_path = os.path.join(os.path.dirname(__file__), 'data')
     documents = SimpleDirectoryReader(input_dir=data_path).load_data()
-    # store ingrestion
-    PERSIST_DIR = "index_cache"
 
+
+    PERSIST_DIR = "index_cache"
+    
     if not os.path.exists(PERSIST_DIR):
         # load the documents and create the index
         state.index = VectorStoreIndex.from_documents(documents)
@@ -237,7 +239,7 @@ if state.ai_toggle:
                 title = ""
             else: 
                 title = state.video_title
-            
+            print(comment, author, title)
             # if user_question:
             #     streaming_response = chat_engine.stream_chat(prompt)
             #     response_placeholder = st.empty()  
@@ -258,7 +260,7 @@ if state.ai_toggle:
                 with st.chat_message("assistant"):
                     def stream(): 
                         chat_engine = state.index.as_chat_engine()
-                        streaming_response = chat_engine.stream_chat(prompt)
+                        streaming_response = chat_engine.stream_chat(prompt_t)
                         for token in streaming_response.response_gen: 
                             yield token
                     streaming = stream()
